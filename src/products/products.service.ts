@@ -137,29 +137,61 @@ export class ProductsService {
   // }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    try{
-      const { images, ...toUpdate} = updateProductDto;
-      const product = await this.productRepository.preload({
-        id, // buscamos un producto por el id
-        ...toUpdate // si existe le otorga los atriutos cambiados del dto al objeto de la bd,
-      });
-      if (!product) throw new NotFoundException(`Product with id: ${id} not found`);
+    
+    const { images, ...toUpdate} = updateProductDto;
+    const product = await this.productRepository.preload({
+      id, // buscamos un producto por el id
+      ...toUpdate // si existe le otorga los atriutos cambiados del dto al objeto de la bd,
+    });
+    if (!product) throw new NotFoundException(`Product with id: ${id} not found`);
 
-      // Create Query runner
-      const queryRunner = this.dataSource.createQueryRunner();
+    // Create Query runner
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-      await this.productRepository.save(product);
-      return product;
-    }catch(error){
+    try {
+      if(images){
+        await queryRunner.manager.delete(ProductImage, {product: {id}})
+        
+        product.images = images.map(
+          img => this.productImageRepository.create({url: img})
+        )
+      }
+
+      await queryRunner.manager.save(product);
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+
+      return this.findOnePlain(id);
+
+      //await this.productRepository.save(product);
+      //return product;
+    } catch (error) {
+
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
+
       this.handleDBExceptions(error);
     }
-    
   }
 
   async remove(id: string) {
     const product = await this.findOne(id);
     await this.productRepository.remove(product); // Puedes usar .remove(product) o .delete(product.id)
     return `Product has been deleted`;
+  }
+
+  async deleteAllProducts(){
+    const query = this.productRepository.createQueryBuilder('product');
+
+    try{
+      return await query
+        .delete()
+        .execute()
+    }catch(error){
+      this.handleDBExceptions(error);
+    }
   }
 
   // Método privado centralizado para errores de base de datos
