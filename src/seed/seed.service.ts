@@ -20,11 +20,11 @@ export class SeedService {
     const products = initialData.products;
 
     // .map() crea el arreglo de promesas automáticamente con el tipo correcto
-    const insertPromises = products.map((product) =>
-      this.productService.create(product),
-    );
+    // const insertPromises = products.map((product) =>
+    //   this.productService.create(product),
+    // );
 
-    await Promise.all(insertPromises);
+    //await Promise.all(insertPromises);
 
     return true;
   }

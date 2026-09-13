@@ -24,17 +24,19 @@ export class AuthService {
   async create(createUserDto: CreateUserDto) {
     try {
       const { password, ...userData } = createUserDto;
+      // 1. Instanciamos el usuario con el hash
       const user = this.userRepository.create({
         ...userData,
         password: bcrypt.hashSync(password, 10),
       });
+      // 2. Al guardar en BD, TypeORM le asigna el ID generado a la variable "user"
       await this.userRepository.save(user);
-      // Separamos la contraseña del resto del usuario
-      const { password: _, ...userWithoutPassword } = user;
+      // 3. Excluimos la contraseña antes de retornar
+      const {password: _, ...userWithoutPassword } = user;
 
       return {
-        ...user,
-        token: this.getJwtToken({email: user.email})
+        ...userWithoutPassword,
+        token: this.getJwtToken({id: user.id})
       };
     } catch (error) {
       this.handleDBExceptions(error);
@@ -46,7 +48,7 @@ export class AuthService {
 
     const user = await this.userRepository.findOne({
       where: {email},
-      select: {email: true, password: true}
+      select: {id: true, email: true, password: true}
     });
 
     if(!user) throw new UnauthorizedException('Credentials are not valid (email)');
@@ -56,7 +58,7 @@ export class AuthService {
 
     return {
       ...user,
-      token: this.getJwtToken({email: user.email})
+      token: this.getJwtToken({id: user.id})
     };
   //TODO: retornar el JWT
   }

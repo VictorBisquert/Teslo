@@ -1,5 +1,6 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ProductImage } from "./";
+import { User } from "../../auth/entities/user.entity";
 
 
 @Entity({name: 'products'})
@@ -55,6 +56,13 @@ export class Product {
         {cascade: true, eager: true} //con eager cada vez que usemos un metodo find en el servicio, al cargar un producto o productos carga sus imagenes
     )
     images?: ProductImage[];
+
+    @ManyToOne(
+        () => User,
+        (user) => user.product,
+        {eager: true}
+    )
+    user: User;
 
 
     @BeforeInsert() //comprobamos si el objeto tiene slug, si tiene perfecto sino cogemos el title
