@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { 
     IsArray, 
     IsIn, 
@@ -11,43 +12,55 @@ import {
 
 
 export class CreateProductDto {
+  @ApiProperty({
+    description: 'Product title (unique)',
+    nullable: false,
+    minLength: 1,
+  })
+  @IsString()
+  @MinLength(1)
+  title: string;
 
-    @IsString()
-    @MinLength(1)
-    title: string;
+  @ApiProperty()
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  price?: number;
 
-    @IsNumber()
-    @IsPositive()
-    @IsOptional()
-    price?: number;
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  description?: string;
 
-    @IsString()
-    @IsOptional()
-    description?: string;
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  slug?: string;
 
-    @IsString()
-    @IsOptional()
-    slug?: string;
+  @ApiProperty()
+  @IsInt()
+  @IsPositive()
+  @IsOptional()
+  stock?: number;
 
-    @IsInt()
-    @IsPositive()
-    @IsOptional()
-    stock?: number;
+  @ApiProperty()
+  @IsString({ each: true }) // cada uno de los elementos tiene que ser si o si string
+  @IsArray()
+  sizes: string[];
 
-    @IsString({each: true}) // cada uno de los elementos tiene que ser si o si string
-    @IsArray()
-    sizes: string[];
+  @ApiProperty()
+  @IsIn(['men', 'women', 'kid', 'unisex'])
+  gender: string;
 
-    @IsIn(['men', 'women', 'kid', 'unisex'])
-    gender: string;
+  @ApiProperty()
+  @IsString({ each: true }) // cada uno de los elementos tiene que ser si o si string
+  @IsArray()
+  @IsOptional()
+  tags: string[];
 
-    @IsString({each: true}) // cada uno de los elementos tiene que ser si o si string
-    @IsArray()
-    @IsOptional()
-    tags: string[];
-
-    @IsString({each: true}) // cada uno de los elementos tiene que ser si o si string
-    @IsArray()
-    @IsOptional()
-    images?: string[];
+  @ApiProperty()
+  @IsString({ each: true }) // cada uno de los elementos tiene que ser si o si string
+  @IsArray()
+  @IsOptional()
+  images?: string[];
 }
